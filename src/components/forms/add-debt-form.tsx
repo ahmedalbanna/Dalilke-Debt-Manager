@@ -1,7 +1,8 @@
+
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useRef } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect, useRef, useState, useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,10 +36,10 @@ function SubmitButton() {
 
 export function AddDebtForm({ customerId }: AddDebtFormProps) {
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(handleAddDebt, initialState);
+  const [state, dispatch] = useActionState(handleAddDebt, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [dueDate, setDueDate] = React.useState<Date | undefined>();
+  const [dueDate, setDueDate] = useState<Date | undefined>();
 
 
   useEffect(() => {

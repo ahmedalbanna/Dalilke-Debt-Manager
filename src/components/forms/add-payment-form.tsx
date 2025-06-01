@@ -1,7 +1,8 @@
+
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useRef } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect, useRef, useState, useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,11 +36,11 @@ function SubmitButton() {
 
 export function AddPaymentForm({ customerId }: AddPaymentFormProps) {
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(handleAddPayment, initialState);
+  const [state, dispatch] = useActionState(handleAddPayment, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [paymentDate, setPaymentDate] = React.useState<Date | undefined>(new Date());
-  const [paymentMethod, setPaymentMethod] = React.useState<string | undefined>();
+  const [paymentDate, setPaymentDate] = useState<Date | undefined>(new Date());
+  const [paymentMethod, setPaymentMethod] = useState<string | undefined>();
 
   useEffect(() => {
     if (state.message && !state.errors) {
