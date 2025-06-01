@@ -1,23 +1,22 @@
+
 import admin from 'firebase-admin';
-import { getApps, initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore as getFirestoreAdmin, FieldValue as AdminFieldValue, Timestamp as AdminTimestamp } from 'firebase-admin/firestore';
 
-// Check if running in a Firebase Hosting environment or if service account is provided
-// For App Hosting, initializeApp() without arguments should work.
-// For local development, you might need a service account key.
-// const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+let dbInstance: admin.firestore.Firestore;
 
-if (getApps().length === 0) {
-  // if (serviceAccountPath) {
-  //   initializeApp({
-  //     credential: cert(serviceAccountPath),
-  //   });
-  // } else {
-    // This should work in Firebase App Hosting environment
-    initializeApp();
-  // }
+function getDb() {
+  if (!dbInstance) {
+    if (getApps().length === 0) {
+      initializeApp();
+    }
+    dbInstance = getFirestoreAdmin();
+  }
+  return dbInstance;
 }
 
-const db = getFirestore();
+// Re-export FieldValue and Timestamp for convenience, ensuring they come from firebase-admin/firestore
+const FieldValue = AdminFieldValue;
+const Timestamp = AdminTimestamp;
 
-export { db, FieldValue, Timestamp };
+export { getDb, FieldValue, Timestamp };

@@ -1,4 +1,6 @@
-import { db, FieldValue, Timestamp } from './firebase';
+
+import { getDb, FieldValue, Timestamp } from './firebase';
+import type admin from 'firebase-admin'; // For Firestore specific types
 import type { Customer, Debt, Payment, DebtAgeData, DebtAgeCategory } from './types';
 import { differenceInDays, parseISO, format as formatDate } from 'date-fns';
 
@@ -18,15 +20,15 @@ function formatTimestampToString(timestamp: admin.firestore.Timestamp | undefine
 }
 
 export async function getCustomers(): Promise<Customer[]> {
-  const snapshot = await db.collection(CUSTOMERS_COLLECTION).orderBy('name').get();
+  const snapshot = await getDb().collection(CUSTOMERS_COLLECTION).orderBy('name').get();
   const customersData = snapshot.docs.map(doc => docDataToType<Customer>(doc));
 
   // Calculate totalDebt for each customer
   for (const customer of customersData) {
-    const debtsSnapshot = await db.collection(DEBTS_COLLECTION).where('customerId', '==', customer.id).get();
+    const debtsSnapshot = await getDb().collection(DEBTS_COLLECTION).where('customerId', '==', customer.id).get();
     const customerDebtsTotal = debtsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
 
-    const paymentsSnapshot = await db.collection(PAYMENTS_COLLECTION).where('customerId', '==', customer.id).get();
+    const paymentsSnapshot = await getDb().collection(PAYMENTS_COLLECTION).where('customerId', '==', customer.id).get();
     const customerPaymentsTotal = paymentsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
     
     customer.totalDebt = customerDebtsTotal - customerPaymentsTotal;
@@ -35,16 +37,16 @@ export async function getCustomers(): Promise<Customer[]> {
 }
 
 export async function getCustomerById(id: string): Promise<Customer | undefined> {
-  const doc = await db.collection(CUSTOMERS_COLLECTION).doc(id).get();
+  const doc = await getDb().collection(CUSTOMERS_COLLECTION).doc(id).get();
   if (!doc.exists) {
     return undefined;
   }
   const customer = docDataToType<Customer>(doc);
 
-  const debtsSnapshot = await db.collection(DEBTS_COLLECTION).where('customerId', '==', customer.id).get();
+  const debtsSnapshot = await getDb().collection(DEBTS_COLLECTION).where('customerId', '==', customer.id).get();
   const customerDebtsTotal = debtsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
 
-  const paymentsSnapshot = await db.collection(PAYMENTS_COLLECTION).where('customerId', '==', customer.id).get();
+  const paymentsSnapshot = await getDb().collection(PAYMENTS_COLLECTION).where('customerId', '==', customer.id).get();
   const customerPaymentsTotal = paymentsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
     
   customer.totalDebt = customerDebtsTotal - customerPaymentsTotal;
@@ -52,7 +54,7 @@ export async function getCustomerById(id: string): Promise<Customer | undefined>
 }
 
 export async function getDebtsForCustomer(customerId: string): Promise<Debt[]> {
-  const snapshot = await db.collection(DEBTS_COLLECTION)
+  const snapshot = await getDb().collection(DEBTS_COLLECTION)
     .where('customerId', '==', customerId)
     .orderBy('createdAt', 'desc') // createdAt is a Timestamp
     .get();
@@ -72,7 +74,7 @@ export async function getDebtsForCustomer(customerId: string): Promise<Debt[]> {
 }
 
 export async function getPaymentsForCustomer(customerId: string): Promise<Payment[]> {
-  const snapshot = await db.collection(PAYMENTS_COLLECTION)
+  const snapshot = await getDb().collection(PAYMENTS_COLLECTION)
     .where('customerId', '==', customerId)
     .orderBy('paymentDate', 'desc') // paymentDate is a YYYY-MM-DD string
     .get();
@@ -84,7 +86,7 @@ export async function addDebt(debtData: Omit<Debt, 'id' | 'createdAt'>): Promise
     ...debtData,
     createdAt: FieldValue.serverTimestamp(), // Use server timestamp
   };
-  const docRef = await db.collection(DEBTS_COLLECTION).add(debtPayload);
+  const docRef = await getDb().collection(DEBTS_COLLECTION).add(debtPayload);
   
   // To return the full Debt object, we need to fetch it again to get the server-generated createdAt
   // Or, we can approximate it for the return if an immediate exact value isn't critical client-side post-add
@@ -97,12 +99,12 @@ export async function addDebt(debtData: Omit<Debt, 'id' | 'createdAt'>): Promise
 }
 
 export async function addPayment(paymentData: Omit<Payment, 'id'>): Promise<Payment> {
-  const docRef = await db.collection(PAYMENTS_COLLECTION).add(paymentData);
+  const docRef = await getDb().collection(PAYMENTS_COLLECTION).add(paymentData);
   return { id: docRef.id, ...paymentData };
 }
 
 export async function addCustomer(customerData: Omit<Customer, 'id' | 'totalDebt'>): Promise<Customer> {
-  const docRef = await db.collection(CUSTOMERS_COLLECTION).add(customerData);
+  const docRef = await getDb().collection(CUSTOMERS_COLLECTION).add(customerData);
   return { 
     id: docRef.id, 
     ...customerData,
@@ -119,7 +121,7 @@ export async function getDebtAgeReport(): Promise<DebtAgeData[]> {
     "90+": { amount: 0, debtCount: 0 },
   };
 
-  const allCustomersSnapshot = await db.collection(CUSTOMERS_COLLECTION).get();
+  const allCustomersSnapshot = await getDb().collection(CUSTOMERS_COLLECTION).get();
   const outstandingDebtsApplicableForReport: Debt[] = [];
 
   for (const customerDoc of allCustomersSnapshot.docs) {
