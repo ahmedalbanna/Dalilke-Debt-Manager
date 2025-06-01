@@ -1,3 +1,4 @@
+
 import { getCustomerById, getDebtsForCustomer, getPaymentsForCustomer } from '@/lib/mock-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,10 +11,10 @@ import { arSA } from 'date-fns/locale';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
-  const customer = await getCustomerById(params.id);
-  const debts = await getDebtsForCustomer(params.id);
-  const payments = await getPaymentsForCustomer(params.id);
+export default async function CustomerDetailPage({ params: { id } }: { params: { id: string } }) {
+  const customer = await getCustomerById(id);
+  const debts = await getDebtsForCustomer(id);
+  const payments = await getPaymentsForCustomer(id);
 
   if (!customer) {
     return <p className="text-center text-destructive">لم يتم العثور على العميل.</p>;
@@ -123,11 +124,11 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         </TabsContent>
 
         <TabsContent value="add-debt">
-          <AddDebtForm customerId={params.id} />
+          <AddDebtForm customerId={id} />
         </TabsContent>
 
         <TabsContent value="add-payment">
-          <AddPaymentForm customerId={params.id} />
+          <AddPaymentForm customerId={id} />
         </TabsContent>
       </Tabs>
     </div>
