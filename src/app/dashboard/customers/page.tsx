@@ -16,7 +16,7 @@ export default async function CustomersPage() {
           <p className="text-muted-foreground">عرض وإدارة جميع العملاء المسجلين.</p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/customers/new"> {/* Placeholder for new customer page */}
+          <Link href="/dashboard/customers/new">
             <PlusCircle className="ms-2 h-4 w-4 rtl:ms-0 rtl:me-2" />
             إضافة عميل جديد
           </Link>

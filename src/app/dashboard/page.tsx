@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BarChart3, Users, CircleDollarSign, AlertTriangle } from 'lucide-react';
+import { BarChart3, Users, CircleDollarSign, AlertTriangle, UserPlus } from 'lucide-react';
 import { getCustomers, getDebtAgeReport } from '@/lib/mock-data';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -68,8 +68,8 @@ export default async function DashboardPage() {
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 items-center justify-center">
-            <Link href="/dashboard/customers/new"> {/* Placeholder for adding new customer directly */}
-              <Users className="h-8 w-8 text-green-500" />
+            <Link href="/dashboard/customers/new">
+              <UserPlus className="h-8 w-8 text-green-500" />
               <span>إضافة عميل جديد</span>
             </Link>
           </Button>

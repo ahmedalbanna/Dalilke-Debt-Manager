@@ -53,9 +53,9 @@ export async function getPaymentsForCustomer(customerId: string): Promise<Paymen
 
 export async function addDebt(debtData: Omit<Debt, 'id' | 'createdAt'>): Promise<Debt> {
   await delay(500);
-  const newDebt: Debt = { 
-    ...debtData, 
-    id: `d${Date.now()}`, 
+  const newDebt: Debt = {
+    ...debtData,
+    id: `d${Date.now()}`,
     createdAt: format(new Date(), 'yyyy-MM-dd')
   };
   debts.push(newDebt);
@@ -67,6 +67,17 @@ export async function addPayment(paymentData: Omit<Payment, 'id'>): Promise<Paym
   const newPayment: Payment = { ...paymentData, id: `p${Date.now()}` };
   payments.push(newPayment);
   return newPayment;
+}
+
+export async function addCustomer(customerData: Omit<Customer, 'id' | 'totalDebt'>): Promise<Customer> {
+  await delay(400);
+  const newCustomer: Customer = {
+    ...customerData,
+    id: `c${Date.now()}`,
+    totalDebt: 0, // New customers start with no debt
+  };
+  customers.push(newCustomer);
+  return newCustomer;
 }
 
 export async function getDebtAgeReport(): Promise<DebtAgeData[]> {
@@ -87,15 +98,15 @@ export async function getDebtAgeReport(): Promise<DebtAgeData[]> {
     const customerTotalPayment = payments
       .filter(p => p.customerId === customer.id)
       .reduce((sum, p) => sum + p.amount, 0);
-    
+
     let remainingDebtToCategorize = customerTotalDebt - customerTotalPayment;
-    
+
     if (remainingDebtToCategorize > 0) {
       // Iterate through debts, oldest first, to assign payments
       const customerDebtsSorted = debts
         .filter(d => d.customerId === customer.id)
         .sort((a, b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime());
-      
+
       let tempPayments = customerTotalPayment;
 
       for (const debt of customerDebtsSorted) {
